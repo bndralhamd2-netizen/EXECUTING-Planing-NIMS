@@ -3,7 +3,7 @@
  * لا يحتوي على أي رموز سرية؛ يرسل رمز العضو المدخل عبر HTTPS POST إلى Apps Script فقط.
  */
 
-const GAS_WEB_APP_URL = 'PUT_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE'; // <-- ضع رابط Web App هنا بعد النشر
+const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbywoEZg-lqfMuJJDdJ4AJLQR9vnfUTgAa3bWiQEkxUCTvUnzD3WkgU45yEJUtQlqkbO-Q/exec';
 const STORAGE_TOKEN_KEY = 'nims_member_token';
 const MAX_FILE_BYTES = 12 * 1024 * 1024; // 12 MB
 
