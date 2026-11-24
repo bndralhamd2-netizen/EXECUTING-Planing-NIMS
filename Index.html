@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NIMS | نظام توثيق التنفيذ والاختبارات</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <div class="brand">
+        <span class="brand-badge">NIMS</span>
+        <div>
+          <h1>نظام توثيق التنفيذ والاختبارات</h1>
+          <p class="subtitle">Network Infrastructure Management &amp; Security Enhancement System</p>
+        </div>
+      </div>
+
+      <div class="token-box" id="tokenBox">
+        <div class="token-input-group">
+          <input type="password" id="memberTokenInput" placeholder="أدخل رمز العضو الخاص..." autocomplete="off" />
+          <button type="button" id="verifyTokenBtn" class="btn btn-primary">تفعيل الرمز</button>
+          <button type="button" id="clearTokenBtn" class="btn btn-ghost hidden" title="مسح الرمز من هذا الجهاز">خروج</button>
+        </div>
+        <div id="memberIdentityBadge" class="identity-badge muted">
+          وضع التصفح فقط — أدخل رمزك الخاص لتسجيل أو تحديث مهامك
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container main-grid">
+    <!-- إحصائيات سريعة -->
+    <section class="stats-row" id="statsRow">
+      <div class="stat-card">
+        <span class="stat-label">إجمالي المهام الموثّقة</span>
+        <strong class="stat-value" id="statTotal">0</strong>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">مكتملة (Completed)</span>
+        <strong class="stat-value text-success" id="statCompleted">0</strong>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">اجتازت الاختبار (Passed)</span>
+        <strong class="stat-value text-cyan" id="statPassed">0</strong>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">قيد العمل / المراجعة</span>
+        <strong class="stat-value text-warn" id="statInProgress">0</strong>
+      </div>
+    </section>
+
+    <!-- التبويبات -->
+    <nav class="tabs">
+      <button class="tab-btn active" data-tab="recordsTab">سجل التنفيذ والمهام</button>
+      <button class="tab-btn" data-tab="newTaskTab">+ تسجيل تنفيذ جديد</button>
+      <button class="tab-btn" data-tab="auditTab">سجل التدقيق (Audit Log)</button>
+    </nav>
+
+    <!-- تبويب السجلات -->
+    <section id="recordsTab" class="tab-panel active">
+      <div class="toolbar">
+        <input type="search" id="searchInput" placeholder="بحث برمز المهمة، العنوان، أو اسم المنفّذ..." />
+        <select id="filterMember">
+          <option value="">كل أعضاء الفريق</option>
+        </select>
+        <select id="filterStatus">
+          <option value="">كل الحالات</option>
+          <option value="Completed">Completed</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Needs Review">Needs Review</option>
+          <option value="Blocked">Blocked</option>
+        </select>
+        <button type="button" id="refreshBtn" class="btn btn-secondary">تحديث البيانات</button>
+      </div>
+
+      <div id="recordsContainer" class="records-list">
+        <div class="loading-box">جارٍ تحميل السجلات...</div>
+      </div>
+    </section>
+
+    <!-- تبويب تسجيل مهمة جديدة -->
+    <section id="newTaskTab" class="tab-panel">
+      <div class="card form-card">
+        <h2>تسجيل تنفيذ مهمة أو رفع كود / دليل اختبار</h2>
+        <p class="hint">يُربط السجل تلقائياً باسم صاحب الرمز الخاص المُفعّل في الأعلى دون إمكانية انتحال هوية عضو آخر.</p>
+
+        <form id="createForm">
+          <div class="form-grid">
+            <div class="field">
+              <label for="taskCode">رمز المهمة (Task / FR Code) *</label>
+              <input type="text" id="taskCode" placeholder="مثال: FR-04 أو NET-VLAN-10" required />
+            </div>
+
+            <div class="field">
+              <label for="moduleSelect">الوحدة / المسار (Module) *</label>
+              <select id="moduleSelect" required>
+                <option value="Network & GNS3">Network &amp; GNS3 Topology</option>
+                <option value="Backend API">Backend API (ASP.NET / FastAPI)</option>
+                <option value="AI & Anomaly Detection">AI &amp; Anomaly Detection</option>
+                <option value="NOC Dashboard UI">NOC Dashboard UI</option>
+                <option value="Security & Testing">Security &amp; Testing</option>
+                <option value="Documentation">Documentation &amp; UML</option>
+              </select>
+            </div>
+
+            <div class="field full">
+              <label for="taskTitle">عنوان المهمة المنفّذة *</label>
+              <input type="text" id="taskTitle" placeholder="مثال: تهيئة SNMPv3 وجمع سجلات Syslog من موجهات GNS3" required />
+            </div>
+
+            <div class="field">
+              <label for="statusSelect">حالة التنفيذ *</label>
+              <select id="statusSelect" required>
+                <option value="Completed">Completed (مكتملة)</option>
+                <option value="In Progress">In Progress (قيد التنفيذ)</option>
+                <option value="Needs Review">Needs Review (تحتاج مراجعة)</option>
+                <option value="Blocked">Blocked (متوقفة)</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="testResultSelect">نتيجة الاختبار *</label>
+              <select id="testResultSelect" required>
+                <option value="Passed">Passed (ناجح)</option>
+                <option value="Partial">Partial (ناجح جزئياً)</option>
+                <option value="Pending">Pending (بانتظار الاختبار)</option>
+                <option value="Failed">Failed (فشل الاختبار)</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="executedAtInput">تاريخ ووقت التنفيذ *</label>
+              <input type="datetime-local" id="executedAtInput" required />
+            </div>
+
+            <div class="field">
+              <label for="fileInput">إرفاق كود أو دليل اختبار (الحد الأقصى 12MB)</label>
+              <input type="file" id="fileInput" />
+            </div>
+
+            <div class="field full">
+              <label for="notesInput">تفاصيل التنفيذ ومخرجات الاختبار</label>
+              <textarea id="notesInput" rows="4" placeholder="اكتب ملخص ما تم تنفيذه، الأوامر أو المخرجات المهمة، وأي ملاحظات للفريق..."></textarea>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" id="submitCreateBtn" class="btn btn-primary">حفظ وتوثيق التنفيذ</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- تبويب سجل التدقيق -->
+    <section id="auditTab" class="tab-panel">
+      <div class="card">
+        <div class="audit-header">
+          <h2>سجل التدقيق والعمليات (غير قابل للحذف)</h2>
+          <button type="button" id="refreshAuditBtn" class="btn btn-secondary">تحديث السجل</button>
+        </div>
+        <div class="table-wrap">
+          <table class="audit-table">
+            <thead>
+              <tr>
+                <th>الوقت</th>
+                <th>العضو</th>
+                <th>الإجراء</th>
+                <th>معرّف السجل</th>
+                <th>الإصدار</th>
+                <th>التفاصيل</th>
+              </tr>
+            </thead>
+            <tbody id="auditTableBody">
+              <tr><td colspan="6">جارٍ التحميل...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- نافذة تحديث سجل قائم (إنشاء إصدار جديد) -->
+  <div id="updateModal" class="modal hidden">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3 id="modalTitle">تحديث السجل (إصدار جديد)</h3>
+        <button type="button" id="closeModalBtn" class="btn btn-ghost">✕</button>
+      </div>
+      <form id="updateForm">
+        <input type="hidden" id="updExecutionId" />
+        <div class="form-grid">
+          <div class="field">
+            <label for="updStatus">الحالة الجديدة</label>
+            <select id="updStatus">
+              <option value="Completed">Completed</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Needs Review">Needs Review</option>
+              <option value="Blocked">Blocked</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="updTestResult">نتيجة الاختبار</label>
+            <select id="updTestResult">
+              <option value="Passed">Passed</option>
+              <option value="Partial">Partial</option>
+              <option value="Pending">Pending</option>
+              <option value="Failed">Failed</option>
+            </select>
+          </div>
+          <div class="field full">
+            <label for="updFile">رفع إصدار جديد من الملف/الكود (اختياري — يحفظ النسخة السابقة)</label>
+            <input type="file" id="updFile" />
+          </div>
+          <div class="field full">
+            <label for="updNotes">ملاحظات الإصدار الجديد</label>
+            <textarea id="updNotes" rows="3"></textarea>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" id="submitUpdateBtn" class="btn btn-primary">حفظ كإصدار جديد</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+  <script src="app.js"></script>
+</body>
+</html>
